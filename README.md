@@ -4,7 +4,7 @@ solutions for show-me-the-code
 
 
 #### 说明： ####
-- [原文地址]（https://github.com/Yixiaohan/show-me-the-code）
+- [原文地址](https://github.com/Yixiaohan/show-me-the-code)
 - Python 练习册，每天一个小程序。注：将 Python 换成其他语言，大多数题目也适用
 - 不会出现诸如「打印九九乘法表」、「打印水仙花」之类的题目
 - 本文由@史江歌（shijiangge@gmail.com  QQ:499065469）根据互联网资料收集整理而成。
