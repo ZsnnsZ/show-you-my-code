@@ -1,0 +1,116 @@
+Microsoft Windows [版本 10.0.14393]
+(c) 2016 Microsoft Corporation。保留所有权利。
+
+C:\Users\MacBook Air\Desktop\show-you-my-code\0023\mysite>python manage.py makemigrations polls
+Migrations for 'polls':
+  polls\migrations\0001_initial.py:
+    - Create model Choice
+    - Create model Question
+    - Add field question to choice
+
+C:\Users\MacBook Air\Desktop\show-you-my-code\0023\mysite>python manage.py sqlmigrate polls 0001
+BEGIN;
+--
+-- Create model Choice
+--
+CREATE TABLE "polls_choice" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "choice_text" varchar(200) NOT NULL, "votes" integer NOT NULL);
+--
+-- Create model Question
+--
+CREATE TABLE "polls_question" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "question_text" varchar(200) NOT NULL, "pub_date" datetime NOT NULL);
+--
+-- Add field question to choice
+--
+ALTER TABLE "polls_choice" RENAME TO "polls_choice__old";
+CREATE TABLE "polls_choice" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "choice_text" varchar(200) NOT NULL, "votes" integer NOT NULL, "question_id" integer NOT NULL REFERENCES "polls_question" ("id"));
+INSERT INTO "polls_choice" ("question_id", "votes", "choice_text", "id") SELECT NULL, "votes", "choice_text", "id" FROM "polls_choice__old";
+DROP TABLE "polls_choice__old";
+CREATE INDEX "polls_choice_7aa0f6ee" ON "polls_choice" ("question_id");
+COMMIT;
+
+C:\Users\MacBook Air\Desktop\show-you-my-code\0023\mysite>python manage.py migrate
+Operations to perform:
+  Apply all migrations: admin, auth, contenttypes, polls, sessions
+Running migrations:
+  Applying polls.0001_initial... OK
+
+C:\Users\MacBook Air\Desktop\show-you-my-code\0023\mysite>python manage.py shell
+Python 3.5.2 (v3.5.2:4def2a2901a5, Jun 25 2016, 22:18:55) [MSC v.1900 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> import django
+>>> django.setup()
+>>> from polls.models import Question, Choice
+>>> Question.objects.all()
+<QuerySet []>
+>>> from django.utils import timezone
+>>> q = Question(question_text="What's new?", pub_date=timezone.now())
+>>> q.save
+<bound method Model.save of <Question: Question object>>
+>>> q.save()
+>>> q.id
+1
+>>> q.question_text
+"What's new?"
+>>> q.pub_date
+datetime.datetime(2016, 11, 16, 10, 40, 44, 881840, tzinfo=<UTC>)
+>>> q.question_text = "What's up?"
+>>> q.save()
+>>> Question.objects.all()
+<QuerySet [<Question: Question object>]>
+>>> 
+
+
+Microsoft Windows [版本 10.0.14393]
+(c) 2016 Microsoft Corporation。保留所有权利。
+
+C:\Users\MacBook Air\Desktop\show-you-my-code\0023\mysite>python manage.py shell
+Python 3.5.2 (v3.5.2:4def2a2901a5, Jun 25 2016, 22:18:55) [MSC v.1900 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> from polls.models import Question, Choice
+>>> Question.objects.all()
+<QuerySet [<Question: What's up?>]>
+>>> Question.objects.filter(id=1)
+<QuerySet [<Question: What's up?>]>
+>>> Question.objects.filter(question_text__startswith='What')
+<QuerySet [<Question: What's up?>]>
+>>> from django.utils import timezone
+>>> current_year = timezone.now().year
+>>> Question.objects.get(pub_date__year=current_year)
+<Question: What's up?>
+>>> Question.objects.get(id=2)
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "C:\Users\MacBook Air\AppData\Local\Programs\Python\Python35\lib\site-packages\django\db\models\manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\MacBook Air\AppData\Local\Programs\Python\Python35\lib\site-packages\django\db\models\query.py", line 385, in get
+    self.model._meta.object_name
+polls.models.DoesNotExist: Question matching query does not exist.
+>>> Question.objects.get(pk=1)
+<Question: What's up?>
+>>> q = Question.objects.get(pk=1)
+>>> q.was_published_recently()
+True
+>>> q = Question.objects.get(pk=1)
+>>> q.choice_set.all()
+<QuerySet []>
+>>> q.choice_set.create(choice_text='Not much', votes=0)
+<Choice: Not much>
+>>> q.choice_set.create(choice_text='The sky', votes=0)
+<Choice: The sky>
+>>> c = q.choice_set.create(choice_text='Just hacking again', votes=0)
+>>> c.question
+<Question: What's up?>
+>>> q.choice_set.all()
+<QuerySet [<Choice: Not much>, <Choice: The sky>, <Choice: Just hacking again>]>
+>>> q.choice_set.count()
+3
+>>> Choice.objects.filter(question__pub_date__year=current_year)
+<QuerySet [<Choice: Not much>, <Choice: The sky>, <Choice: Just hacking again>]>
+>>> c = q.choice_set.filter(choice_text__startswith='Just hacking')
+>>> c.delete()
+(1, {'polls.Choice': 1})
+>>> q.choice_set.all()
+<QuerySet [<Choice: Not much>, <Choice: The sky>]>
+>>>
